@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// schema.prisma
+
+model User {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  clerkId   String  @unique
+  email     String  @unique
+  username  String  @unique
+  firstname String
+  lastname  String
+  photo     String
+  Event     Event[]
+  Order     Order[]
+}
+
+model Event {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  description   String?
+  location      String?
+  createdAt     DateTime @default(now())
+  imageUrl      String
+  startDateTime DateTime @default(now())
+  endDateTime   DateTime @default(now())
+  price         String?
+  url           String?
+  isFree        Boolean  @default(false)
+  categoryId    String   @db.ObjectId
+  organizerId   String   @db.ObjectId
+  category      Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  organizer     User     @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  Order         Order[]
+}
+
+model Category {
+  id    String  @id @default(auto()) @map("_id") @db.ObjectId
+  name  String  @unique
+  Event Event[]
+}
+
+model Order {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt   DateTime @default(now())
+  stripeId    String   @unique
+  totalAmount String?
+  eventId     String   @db.ObjectId
+  buyerId     String   @db.ObjectId
+  event       Event    @relation(fields: [eventId], references: [id])
+  buyer       User     @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+}
